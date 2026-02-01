@@ -1,0 +1,33 @@
+.canvas {
+  grid-area: canvas;
+  position: relative;
+}
+
+.canvas :global(.canvas__wrapper) {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.playbackIndicator {
+  margin-top: 2rem;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.playbackHint {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  font-weight: 400;
+}
