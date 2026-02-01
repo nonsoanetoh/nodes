@@ -1,0 +1,30 @@
+.timeline {
+  grid-area: timeline-pane;
+  margin-left: var(--grid-column-spacing);
+  margin-top: calc(var(--figma) * 95);
+}
+
+.timeline :global(.setting__range-input) {
+  margin-bottom: 4rem;
+}
+
+.timeline :global(.row) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timeline :global(.center) {
+  display: flex;
+  justify-content: center;
+}
+
+.timeline :global(.control-group) {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.timeline :global(.reference-image) {
+  margin-top: 2rem;
+}
