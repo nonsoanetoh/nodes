@@ -1,0 +1,17 @@
+.settingsPane {
+  margin-top: calc(var(--figma) * 125);
+  grid-area: settings-pane;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--figma) * 100);
+}
+
+.settingsPane :global(.group) {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--figma) * 35);
+}
+
+.settingsPane :global(.group.tight) {
+  gap: calc(var(--figma) * 15);
+}
