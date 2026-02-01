@@ -1,0 +1,662 @@
+.setting {
+}
+
+.setting :global(.setting__label) {
+  color: #969696;
+  font-size: var(--text-xl);
+  font-weight: 500;
+}
+.setting :global(.row) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.setting :global(.setting__shortcut-indicator) {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.setting :global(.setting__shortcut-indicator span) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #666;
+  background: #f5f5f5;
+  border: 1px solid #d0d0d0;
+  border-radius: 0.25rem;
+  box-shadow:
+    0 1px 0 0 rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+  user-select: none;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.01em;
+  transition: all 0.15s ease;
+}
+
+.setting :global(.setting__shortcut-indicator span.triggered) {
+  background: #e8e8e8;
+  border-color: #999;
+  box-shadow:
+    0 1px 0 0 rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+}
+
+/* DUO INPUT */
+
+.setting :global(.setting__duo-input) {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+:global(.setting__duo-input) :global(.input-container) {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+:global(.setting__duo-input) :global(.input-container input) {
+  font-size: calc(1.15 * var(--text-xl));
+  font-family: inherit;
+  text-align: center;
+  background: #f1f1f1;
+  width: calc(var(--figma) * 95);
+  color: #333;
+  outline: none;
+  border: none;
+}
+
+:global(.setting__duo-input)
+  :global(.input-container input::-webkit-outer-spin-button),
+:global(.setting__duo-input)
+  :global(.input-container input::-webkit-inner-spin-button) {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+:global(.setting__duo-input) :global(.input-container input) {
+  -moz-appearance: textfield;
+}
+
+:global(.setting__duo-input) :global(.input-separator) {
+  color: #969696;
+  font-size: var(--text-md);
+  user-select: none;
+}
+
+:global(.setting__duo-input) :global(.input-container input:focus) {
+  outline: 1px solid #22bb28;
+}
+
+/* COLOR INPUT */
+
+:global(.setting__color-input) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+:global(.setting__color-input) :global(.input-container input:focus) {
+  outline: 1px solid #22bb28;
+}
+
+:global(.setting__color-input) :global(.input-container input) {
+  width: 1rem;
+  height: 1rem;
+  background: #f1f1f1;
+  color: #333;
+  outline: none;
+  border: 1px solid #333;
+}
+
+/* SELECT INPUT */
+
+:global(.setting__select-input) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--inline-spacing);
+}
+
+:global(.setting__select-input) :global(.input-container select) {
+  background: #f1f1f1;
+  border: 1px solid #d0d0d0;
+  color: #333;
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: 500;
+  padding: 0.375rem 2rem 0.375rem 0.5rem;
+  border-radius: 0;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='8' height='6' viewBox='0 0 8 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0L4 6L8 0H0Z' fill='%23666'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 0.5rem;
+  width: 100%;
+}
+
+:global(.setting__select-input) :global(.input-container select:hover) {
+  border-color: #999;
+}
+
+:global(.setting__select-input) :global(.input-container select:focus) {
+  outline: 1px solid #22bb28;
+  outline-offset: 2px;
+}
+
+:global(.setting__select-input) :global(.input-container select option) {
+  background: #fff;
+  color: #333;
+}
+
+/* IMAGE INPUT */
+
+:global(.setting__image-input) {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
+
+:global(.setting__image-input) :global(.field) {
+  display: flex;
+  gap: 0.25rem;
+  font-size: var(--text-sm);
+  color: #969696;
+  margin-top: 0.25rem;
+}
+:global(.setting__image-input) :global(.input-container) {
+  width: min(40%, 12rem);
+  aspect-ratio: 1 / 1;
+  border: 1px solid #d0d0d0;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+:global(.setting__image-input) :global(.input-container:hover) {
+  border-color: #999;
+}
+
+:global(.setting__image-input) :global(.input-container:focus-within) {
+  outline: 1px solid #22bb28;
+  outline-offset: 2px;
+}
+
+:global(.setting__image-input) :global(.image-placeholder) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+:global(.setting__image-input) :global(.image-placeholder) svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+:global(.setting__image-input) :global(.image-preview) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* IMAGE LIST INPUT */
+
+:global(.setting__image-list-input) {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+:global(.setting__image-list-input) :global(.add-buttons) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+:global(.setting__image-list-input) :global(.add-button) {
+  background: #f1f1f1;
+  border: 1px solid #fff;
+  color: #333;
+  padding: 0.5rem 0.75rem;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+:global(.setting__image-list-input) :global(.add-button:hover) {
+  background: #e8e8e8;
+}
+
+:global(.setting__image-list-input) :global(.add-button:focus-visible) {
+  outline: 1px solid #22bb28;
+  outline-offset: 2px;
+}
+
+:global(.setting__image-list-input) :global(.url-input-container) {
+  width: 100%;
+}
+
+:global(.setting__image-list-input) :global(.url-input) {
+  width: 100%;
+  background: #f1f1f1;
+  border: 1px solid #d0d0d0;
+  color: #333;
+  padding: 0.5rem 0.75rem;
+  font-size: inherit;
+  font-family: inherit;
+  outline: none;
+}
+
+:global(.setting__image-list-input) :global(.url-input:focus) {
+  outline: 1px solid #22bb28;
+  outline-offset: 2px;
+}
+
+:global(.setting__image-list-input) :global(.image-grid) {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+
+:global(.setting__image-list-input) :global(.image-grid-item) {
+  aspect-ratio: 1 / 1;
+  position: relative;
+  border: 1px solid #fff;
+  background: #f1f1f1;
+  overflow: hidden;
+}
+
+:global(.setting__image-list-input) :global(.image-grid-item.empty) {
+  background: #f1f1f1;
+}
+
+:global(.setting__image-list-input) :global(.empty-placeholder) {
+  width: 100%;
+  height: 100%;
+}
+
+:global(.setting__image-list-input) :global(.grid-image) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+:global(.setting__image-list-input) :global(.remove-image) {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.375rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+  padding: 0;
+  z-index: 10;
+}
+
+:global(.setting__image-list-input) :global(.remove-image:hover) {
+  background: rgba(220, 38, 38, 0.9);
+  transform: scale(1.1);
+}
+
+:global(.setting__image-list-input) :global(.remove-image:active) {
+  transform: scale(0.95);
+}
+
+:global(.setting__image-list-input)
+  :global(.image-grid-item:hover .remove-image) {
+  opacity: 1;
+}
+
+:global(.setting__image-list-input) :global(.remove-image svg) {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* Toggle Switch */
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 2.5rem;
+  height: 1.25rem;
+  cursor: pointer;
+}
+
+.toggleSwitch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e0e0e0;
+  transition: 0.15s;
+  border-radius: 0;
+}
+
+.toggleSlider:before {
+  position: absolute;
+  content: "";
+  height: calc(100% - 0.25rem);
+  width: calc(50% - 0.25rem);
+  left: 0.125rem;
+  top: 0.125rem;
+  background-color: #555555;
+  transition: left 0.15s;
+  border-radius: 0;
+  border: 1px solid #e0e0e0;
+  box-sizing: border-box;
+}
+
+.toggleSwitch input:checked + .toggleSlider {
+  background-color: #e0e0e0;
+}
+
+.toggleSwitch input:checked + .toggleSlider:before {
+  left: calc(50% + 0.125rem);
+}
+
+.toggleSwitch input:focus-visible + .toggleSlider {
+  outline: 1px solid #22bb28;
+  outline-offset: 2px;
+}
+
+/* RADIO INPUT */
+
+:global(.setting__radio-input) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--inline-spacing);
+}
+
+:global(.setting__radio-input) :global(.input-container) {
+  display: flex;
+  justify-content: space-between;
+  outline: none;
+  border: none;
+}
+
+:global(.setting__radio-input) :global(.input-container) :global(.field) {
+  display: flex;
+  gap: calc(var(--inline-spacing) / 2);
+  font-size: inherit;
+  align-items: center;
+}
+
+:global(.setting__radio-input) :global(.input-container) :global(.field) input {
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid #22bb28;
+  border-radius: 50%;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
+}
+
+:global(.setting__radio-input)
+  :global(.input-container)
+  :global(.field)
+  input:focus {
+  outline: none;
+  border-color: 1px solid #22bb28;
+  box-shadow: 0 0 0 1px #22bb28;
+}
+
+:global(.setting__radio-input)
+  :global(.input-container)
+  :global(.field)
+  input[type="radio"]:checked
+  + label {
+  color: #000;
+}
+
+/* RANGE INPUT */
+
+:global(.setting__range-input) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--inline-spacing);
+}
+
+:global(.setting__range-input) :global(.input-container) {
+  flex: 1;
+  position: relative;
+}
+
+:global(.setting__range-input) :global(.input-container input[type="range"]) {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #e0e0e0;
+  outline: none;
+  cursor: pointer;
+}
+
+:global(.setting__range-input)
+  :global(.input-container input[type="range"]::-webkit-slider-thumb) {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 4px;
+  height: 16px;
+  background: #666;
+  cursor: pointer;
+}
+
+:global(.setting__range-input)
+  :global(.input-container input[type="range"]::-moz-range-thumb) {
+  width: 4px;
+  height: 16px;
+  background: #666;
+  border: none;
+  cursor: pointer;
+}
+
+:global(.setting__range-input)
+  :global(.input-container input[type="range"]::-moz-range-track) {
+  height: 4px;
+  background: #e0e0e0;
+}
+
+:global(.setting__range-input)
+  :global(.input-container input[type="range"]:focus) {
+  outline: none;
+}
+
+:global(.setting__range-input)
+  :global(.input-container input[type="range"]:focus::-webkit-slider-thumb) {
+  background: #22bb28;
+  box-shadow: 0 0 0 2px rgba(34, 187, 40, 0.2);
+}
+
+:global(.setting__range-input)
+  :global(.input-container input[type="range"]:focus::-moz-range-thumb) {
+  background: #22bb28;
+  box-shadow: 0 0 0 2px rgba(34, 187, 40, 0.2);
+}
+
+/* BUTTON CONTROL */
+
+:global(.setting__button-control) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+:global(.setting__button-control) button {
+  width: 2rem;
+  height: 2rem;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  outline: none;
+  transition: background-color 0.15s ease;
+  position: relative;
+}
+
+:global(.setting__button-control) button:hover {
+  background: #d0d0d0;
+}
+
+:global(.setting__button-control) button:active {
+  background: #c0c0c0;
+}
+
+:global(.setting__button-control) button:focus-visible {
+  outline: 1px solid #22bb28;
+  outline-offset: 2px;
+}
+
+:global(.setting__button-control) button svg {
+  width: 50%;
+  height: 50%;
+  max-width: 1rem;
+  max-height: 1rem;
+  display: block;
+  margin: 0 auto;
+}
+
+:global(.setting__button-control) button svg path {
+  fill: #595959;
+}
+
+/* Super Alignment */
+:global(.setting__button-control--super) button {
+  overflow: visible;
+}
+
+:global(.setting__button-control--super) button svg {
+  width: 1.125rem;
+  height: 1rem;
+  max-width: none;
+  max-height: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+}
+
+/* Shortcut indicator for button controls */
+:global(.setting__button-control) :global(.setting__shortcut-indicator) {
+  margin-top: 0.25rem;
+  display: flex;
+  gap: 0.125rem;
+  align-items: center;
+  justify-content: center;
+}
+
+:global(.setting__button-control) :global(.setting__shortcut-indicator span) {
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.25rem;
+  font-size: 0.625rem;
+}
+
+/* Value Indicator Variant */
+
+:global(.setting__range-input) :global(.value-indicator) {
+  position: absolute;
+  bottom: -2rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  pointer-events: auto;
+  z-index: 10;
+  user-select: none;
+}
+
+:global(.setting__range-input) :global(.value-text) {
+  background: #e0e0e0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  color: #333;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+:global(.setting__range-input) :global(.value-arrow) {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 4px solid #e0e0e0;
+  margin-bottom: -1px;
+}
+
+:global(.setting__range-input) :global(.track-overlay) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+:global(.setting__range-input) :global(.track-filled) {
+  height: 100%;
+  background: #e0e0e0;
+  transition: width 0.1s ease;
+}
+
+:global(.setting__range-input)
+  :global(.input-container input[type="range"].with-indicator) {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+}
+
+:global(.setting__range-input)
+  :global(
+    .input-container
+      input[type="range"].with-indicator::-webkit-slider-runnable-track
+  ) {
+  background: #bbbbbb;
+}
+
+:global(.setting__range-input)
+  :global(
+    .input-container input[type="range"].with-indicator::-moz-range-track
+  ) {
+  background: #bbbbbb;
+}
