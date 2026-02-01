@@ -1,0 +1,201 @@
+.header {
+  padding: var(--grid-column-spacing);
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  width: 100vw;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: start;
+}
+
+.header h1,
+.header p {
+  font-size: var(--text-xl);
+  font-weight: 400;
+}
+
+.header p {
+  margin-left: calc(var(--figma) * 27.5);
+  text-indent: calc(var(--figma) * 5);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.header p svg {
+  height: 1em;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.exportContainer {
+  position: relative;
+}
+
+.exportButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s ease;
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: #333;
+  font-family: inherit;
+}
+
+.exportButton:hover:not(:disabled) {
+  background: #d0d0d0;
+}
+
+.exportButton:active:not(:disabled) {
+  background: #c0c0c0;
+}
+
+.exportButton:focus-visible {
+  outline: 1px solid #22bb28;
+  outline-offset: 2px;
+}
+
+.exportButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.exportButton svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.exportButton svg path {
+  fill: #595959;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.25rem;
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 12rem;
+  z-index: 1000;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s ease;
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: #333;
+  font-family: inherit;
+  text-align: left;
+}
+
+.dropdownItem:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.dropdownItem:active:not(:disabled) {
+  background: #e8e8e8;
+}
+
+.dropdownItem:focus-visible {
+  outline: 1px solid #22bb28;
+  outline-offset: -1px;
+}
+
+.dropdownItem:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dropdownItem svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.dropdownItem svg path {
+  fill: #595959;
+}
+
+/* Export Status Indicator */
+.exportStatus {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 1rem;
+  min-width: 12rem;
+  z-index: 1001;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.exportStatusContent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: #333;
+}
+
+.exportStatusSuccess {
+  color: #22bb28;
+}
+
+.exportStatusError {
+  color: #d32f2f;
+}
+
+.exportSpinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #e0e0e0;
+  border-top-color: #595959;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
