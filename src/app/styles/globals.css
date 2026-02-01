@@ -1,0 +1,77 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+:root {
+  --figma: calc(100vw / 1920);
+  --color-grey-100: #d9d9d9;
+
+  --text-sm: calc(16 * var(--figma));
+  --text-md: calc(18 * var(--figma));
+  --text-lg: calc(20 * var(--figma));
+  --text-xl: calc(22 * var(--figma));
+
+  --column-spacing--sm: calc(10 * var(--figma));
+
+  --grid-column-spacing: calc(20 * var(--figma));
+  --grid-row-spacing: calc(30 * var(--figma));
+
+  --inline-spacing: calc(10 * var(--figma));
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-jost), sans-serif;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  outline: none;
+}
+
+input[type="color"] {
+  -webkit-appearance: none;
+  border: none;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+}
+
+.inline {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
