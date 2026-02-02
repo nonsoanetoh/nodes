@@ -387,9 +387,39 @@ export default function Canvas() {
     ctx.fillStyle = project.backgroundColor;
     ctx.fillRect(0, 0, canvasDisplayWidth, canvasDisplayHeight);
 
-    // Draw reference image if it exists
     const currentFrame = project.frames[project.currentFrameIndex];
-    if (currentFrame?.referenceImage) {
+
+    // Load and cache clip background image if clip mode is enabled
+    if (project.clipMode && project.clipBackgroundImage) {
+      const clipImg = imageCacheRef.current.get(project.clipBackgroundImage);
+      if (!clipImg) {
+        // Load clip background image if not cached
+        const img = new Image();
+        img.onload = () => {
+          imageCacheRef.current.set(project.clipBackgroundImage!, img);
+          setLoadedImages((prev) =>
+            new Set(prev).add(project.clipBackgroundImage!),
+          );
+        };
+        img.onerror = () => {
+          console.error("Failed to load clip background image");
+        };
+        img.src = project.clipBackgroundImage;
+        imageCacheRef.current.set(project.clipBackgroundImage, img);
+      } else if (clipImg.complete) {
+        // Image is already loaded, ensure it's in loadedImages for re-render tracking
+        setLoadedImages((prev) => {
+          if (!prev.has(project.clipBackgroundImage!)) {
+            return new Set(prev).add(project.clipBackgroundImage!);
+          }
+          return prev;
+        });
+      }
+    }
+
+    // Draw reference image if it exists (drawn before nodes so nodes appear on top)
+    // Hide reference image when clip mode is enabled
+    if (currentFrame?.referenceImage && !project.clipMode) {
       const imageUrl = currentFrame.referenceImage;
       const cachedImg = imageCacheRef.current.get(imageUrl);
 
@@ -429,58 +459,79 @@ export default function Canvas() {
       const nodeX = pixelX - nodeSize / 2;
       const nodeY = pixelY - nodeSize / 2;
 
-      // Draw image if available and images are enabled, otherwise draw solid color
-      if (
-        project.showImages &&
-        node.imageIndex !== undefined &&
-        imageLibrary[node.imageIndex] !== undefined
-      ) {
-        const imageUrl = imageLibrary[node.imageIndex];
-        const cachedImg = imageCacheRef.current.get(imageUrl);
-
-        if (cachedImg && cachedImg.complete) {
-          // Draw image with aspect ratio preserved
+      // Clip mode: nodes reveal the background image
+      if (project.clipMode && project.clipBackgroundImage) {
+        const clipImg = imageCacheRef.current.get(project.clipBackgroundImage);
+        if (clipImg && clipImg.complete && clipImg.naturalWidth > 0) {
           ctx.save();
-          const imgAspectRatio = cachedImg.width / cachedImg.height;
-          let drawWidth = nodeSize;
-          let drawHeight = nodeSize;
-          let drawX = nodeX;
-          let drawY = nodeY;
-
-          // Calculate dimensions to fit within nodeSize while preserving aspect ratio
-          if (imgAspectRatio > 1) {
-            // Image is wider than tall
-            drawHeight = nodeSize / imgAspectRatio;
-            drawY = nodeY + (nodeSize - drawHeight) / 2;
-          } else {
-            // Image is taller than wide or square
-            drawWidth = nodeSize * imgAspectRatio;
-            drawX = nodeX + (nodeSize - drawWidth) / 2;
-          }
-
-          ctx.drawImage(cachedImg, drawX, drawY, drawWidth, drawHeight);
+          // Create square clip path
+          ctx.beginPath();
+          ctx.rect(nodeX, nodeY, nodeSize, nodeSize);
+          ctx.clip();
+          // Draw the background image within the clipped area
+          // The image is drawn at full canvas size, but only the clipped square area will be visible
+          ctx.drawImage(clipImg, 0, 0, canvasDisplayWidth, canvasDisplayHeight);
           ctx.restore();
-        } else if (!cachedImg) {
-          // Load image if not cached
-          const img = new Image();
-          img.onload = () => {
-            imageCacheRef.current.set(imageUrl, img);
-            setLoadedImages((prev) => new Set(prev).add(imageUrl));
-          };
-          img.src = imageUrl;
-          imageCacheRef.current.set(imageUrl, img);
-          // Draw placeholder color while loading
-          ctx.fillStyle = nodeColor;
-          ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
         } else {
-          // Image is loading, draw placeholder
+          // Background image is loading or not available, draw placeholder
           ctx.fillStyle = nodeColor;
           ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
         }
       } else {
-        // No image, draw solid color
-        ctx.fillStyle = nodeColor;
-        ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
+        // Normal mode: draw image on node or solid color
+        // Draw image if available and images are enabled, otherwise draw solid color
+        if (
+          project.showImages &&
+          node.imageIndex !== undefined &&
+          imageLibrary[node.imageIndex] !== undefined
+        ) {
+          const imageUrl = imageLibrary[node.imageIndex];
+          const cachedImg = imageCacheRef.current.get(imageUrl);
+
+          if (cachedImg && cachedImg.complete) {
+            // Draw image with aspect ratio preserved
+            ctx.save();
+            const imgAspectRatio = cachedImg.width / cachedImg.height;
+            let drawWidth = nodeSize;
+            let drawHeight = nodeSize;
+            let drawX = nodeX;
+            let drawY = nodeY;
+
+            // Calculate dimensions to fit within nodeSize while preserving aspect ratio
+            if (imgAspectRatio > 1) {
+              // Image is wider than tall
+              drawHeight = nodeSize / imgAspectRatio;
+              drawY = nodeY + (nodeSize - drawHeight) / 2;
+            } else {
+              // Image is taller than wide or square
+              drawWidth = nodeSize * imgAspectRatio;
+              drawX = nodeX + (nodeSize - drawWidth) / 2;
+            }
+
+            ctx.drawImage(cachedImg, drawX, drawY, drawWidth, drawHeight);
+            ctx.restore();
+          } else if (!cachedImg) {
+            // Load image if not cached
+            const img = new Image();
+            img.onload = () => {
+              imageCacheRef.current.set(imageUrl, img);
+              setLoadedImages((prev) => new Set(prev).add(imageUrl));
+            };
+            img.src = imageUrl;
+            imageCacheRef.current.set(imageUrl, img);
+            // Draw placeholder color while loading
+            ctx.fillStyle = nodeColor;
+            ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
+          } else {
+            // Image is loading, draw placeholder
+            ctx.fillStyle = nodeColor;
+            ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
+          }
+        } else {
+          // No image, draw solid color
+          ctx.fillStyle = nodeColor;
+          ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
+        }
       }
     };
 
@@ -534,6 +585,8 @@ export default function Canvas() {
     project.drawMode,
     project.imageLibrary,
     project.showImages,
+    project.clipMode,
+    project.clipBackgroundImage,
     mousePosition,
     isDrawing,
     isPlaying,
