@@ -13,6 +13,7 @@ const RangeInput: FC<RangeInputProps> = ({
   showValueIndicator,
   onChange,
 }) => {
+  const [mounted, setMounted] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<number>(value);
   const [indicatorPosition, setIndicatorPosition] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -20,9 +21,16 @@ const RangeInput: FC<RangeInputProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
 
+  // Ensure component is mounted on client before rendering value-dependent content
   useEffect(() => {
-    setInputValue(value);
-  }, [value]);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      setInputValue(value);
+    }
+  }, [value, mounted]);
 
   useEffect(() => {
     if (showValueIndicator && sliderRef.current) {
@@ -83,7 +91,8 @@ const RangeInput: FC<RangeInputProps> = ({
     };
   }, [isDragging, showValueIndicator, clamp, step, onChange]);
 
-  const percentage = ((inputValue - clamp[0]) / (clamp[1] - clamp[0])) * 100;
+  const displayValue = mounted ? inputValue : value;
+  const percentage = ((displayValue - clamp[0]) / (clamp[1] - clamp[0])) * 100;
 
   return (
     <div className={`${styles.setting}`}>
@@ -117,7 +126,7 @@ const RangeInput: FC<RangeInputProps> = ({
               onMouseDown={handleIndicatorMouseDown}
             >
               <span className="value-text">
-                {inputValue} / {clamp[1]}
+                {mounted ? inputValue : value} / {clamp[1]}
               </span>
               <div className="value-arrow" />
             </div>

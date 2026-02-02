@@ -5,39 +5,65 @@ import IndentedArrowIcon from "./icons/indented-arrow";
 import ChevronDown from "./icons/chevron-down";
 import Download from "./icons/download";
 import { useProjectContext } from "../context/ProjectContext";
-import { exportAsGIF, exportAsVideo, downloadBlob } from "../utils/export";
+import {
+  exportAsGIF,
+  exportAsVideo,
+  exportAsJSON,
+  downloadBlob,
+} from "../utils/export";
 
 const Header = () => {
-  const { project, resetProject } = useProjectContext();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const {
+    project,
+    createNewProject,
+    deleteCurrentProject,
+    updateProjectName,
+    importProject,
+    currentSlot,
+    switchSlot,
+    getProjectsList,
+  } = useProjectContext();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
+  const projectDropdownRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
-  const [exportType, setExportType] = useState<"GIF" | "Video" | null>(null);
+  const [exportType, setExportType] = useState<"GIF" | "Video" | "JSON" | null>(
+    null,
+  );
   const [exportStatus, setExportStatus] = useState<
     "idle" | "exporting" | "success" | "error"
   >("idle");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const statusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        setIsDropdownOpen(false);
+        setIsExportDropdownOpen(false);
+      }
+      if (
+        projectDropdownRef.current &&
+        !projectDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProjectDropdownOpen(false);
       }
     };
 
-    if (isDropdownOpen) {
+    if (isExportDropdownOpen || isProjectDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isDropdownOpen]);
+  }, [isExportDropdownOpen, isProjectDropdownOpen]);
 
   const handleExportGIF = async () => {
     if (isExporting) return;
@@ -45,7 +71,7 @@ const Header = () => {
     setExportProgress(0);
     setExportType("GIF");
     setExportStatus("exporting");
-    setIsDropdownOpen(false);
+    setIsExportDropdownOpen(false);
 
     // Clear any existing timeout
     if (statusTimeoutRef.current) {
@@ -83,7 +109,7 @@ const Header = () => {
     setExportProgress(0);
     setExportType("Video");
     setExportStatus("exporting");
-    setIsDropdownOpen(false);
+    setIsExportDropdownOpen(false);
 
     // Clear any existing timeout
     if (statusTimeoutRef.current) {
@@ -124,6 +150,43 @@ const Header = () => {
     };
   }, []);
 
+  const handleImportJSON = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      try {
+        const importedProject = JSON.parse(reader.result as string);
+        importProject(importedProject);
+        setIsExportDropdownOpen(false);
+        setExportStatus("success");
+        setExportType("JSON");
+        statusTimeoutRef.current = setTimeout(() => {
+          setExportStatus("idle");
+          setExportType(null);
+        }, 3000);
+      } catch (error) {
+        console.error("Error importing JSON:", error);
+        setExportStatus("error");
+        setExportType("JSON");
+        statusTimeoutRef.current = setTimeout(() => {
+          setExportStatus("idle");
+          setExportType(null);
+        }, 5000);
+      }
+    };
+    reader.readAsText(file);
+    // Reset input so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <header className={h_styles.header}>
       <div className="group">
@@ -134,87 +197,192 @@ const Header = () => {
         </p>
       </div>
       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-        <button
-          className={h_styles.exportButton}
-          onClick={() => {
-            if (confirm("Start a new project? This will reset all frames and nodes.")) {
-              resetProject();
-            }
-          }}
-          style={{ marginRight: 0 }}
-        >
-          <span>New Project</span>
-        </button>
+        <div className={h_styles.exportContainer} ref={projectDropdownRef}>
+          <button
+            className={h_styles.exportButton}
+            onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
+          >
+            <span>{mounted ? project.name : "Untitled"}</span>
+            <ChevronDown
+              style={{
+                transform: isProjectDropdownOpen
+                  ? "rotate(180deg)"
+                  : "rotate(0deg)",
+                transition: "transform 0.15s ease",
+              }}
+            />
+          </button>
+          {isProjectDropdownOpen && (
+            <div className={h_styles.dropdown}>
+              <button
+                className={h_styles.dropdownItem}
+                onClick={() => {
+                  const name = prompt("Enter project name:", "Untitled");
+                  if (name !== null) {
+                    createNewProject(name || "Untitled");
+                    setIsProjectDropdownOpen(false);
+                  }
+                }}
+              >
+                <span>Create New Project</span>
+              </button>
+              {getProjectsList().filter(
+                (p) => !p.isEmpty && p.slot !== currentSlot,
+              ).length > 0 && (
+                <>
+                  <div
+                    style={{
+                      borderTop: "1px solid #e0e0e0",
+                      margin: "0.5rem 0",
+                    }}
+                  />
+                  {getProjectsList()
+                    .filter((p) => !p.isEmpty && p.slot !== currentSlot)
+                    .map((p) => (
+                      <button
+                        key={p.slot}
+                        className={h_styles.dropdownItem}
+                        onClick={() => {
+                          switchSlot(p.slot);
+                          setIsProjectDropdownOpen(false);
+                        }}
+                      >
+                        <span>{p.name}</span>
+                      </button>
+                    ))}
+                </>
+              )}
+              <div
+                style={{ borderTop: "1px solid #e0e0e0", margin: "0.5rem 0" }}
+              />
+              <button
+                className={h_styles.dropdownItem}
+                onClick={() => {
+                  const newName = prompt("Rename project:", project.name);
+                  if (newName !== null && newName.trim()) {
+                    updateProjectName(newName.trim());
+                    setIsProjectDropdownOpen(false);
+                  }
+                }}
+              >
+                <span>Rename Project</span>
+              </button>
+              <button
+                className={h_styles.dropdownItem}
+                onClick={() => {
+                  if (
+                    confirm(`Delete "${project.name}"? This cannot be undone.`)
+                  ) {
+                    deleteCurrentProject();
+                    setIsProjectDropdownOpen(false);
+                  }
+                }}
+                style={{ color: "#ff0000" }}
+              >
+                <span>Delete Project</span>
+              </button>
+            </div>
+          )}
+        </div>
         <div className={h_styles.exportContainer} ref={dropdownRef}>
-        <button
-          className={h_styles.exportButton}
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          disabled={isExporting}
-        >
-          <Download />
-          <span>Export</span>
-          <ChevronDown
-            style={{
-              transform: isDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 0.15s ease",
-            }}
-          />
-        </button>
-        {isDropdownOpen && (
-          <div className={h_styles.dropdown}>
-            <button
-              className={h_styles.dropdownItem}
-              onClick={handleExportGIF}
-              disabled={isExporting}
-            >
-              <Download />
-              <span>
-                {isExporting
-                  ? `Exporting GIF... ${Math.round(exportProgress * 100)}%`
-                  : "Export GIF"}
-              </span>
-            </button>
-            <button
-              className={h_styles.dropdownItem}
-              onClick={handleExportVideo}
-              disabled={isExporting}
-            >
-              <Download />
-              <span>
-                {isExporting
-                  ? `Exporting Video... ${Math.round(exportProgress * 100)}%`
-                  : "Export Video"}
-              </span>
-            </button>
-          </div>
-        )}
-        {/* Export Status Indicator */}
-        {exportStatus !== "idle" && (
-          <div className={h_styles.exportStatus}>
-            {exportStatus === "exporting" && (
-              <div className={h_styles.exportStatusContent}>
-                <div className={h_styles.exportSpinner}></div>
+          <button
+            className={h_styles.exportButton}
+            onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+            disabled={isExporting}
+          >
+            <Download />
+            <span>Export</span>
+            <ChevronDown
+              style={{
+                transform: isExportDropdownOpen
+                  ? "rotate(180deg)"
+                  : "rotate(0deg)",
+                transition: "transform 0.15s ease",
+              }}
+            />
+          </button>
+          {isExportDropdownOpen && (
+            <div className={h_styles.dropdown}>
+              <button
+                className={h_styles.dropdownItem}
+                onClick={handleExportGIF}
+                disabled={isExporting}
+              >
+                <Download />
                 <span>
-                  Exporting {exportType}... {Math.round(exportProgress * 100)}%
+                  {isExporting
+                    ? `Exporting GIF... ${Math.round(exportProgress * 100)}%`
+                    : "Export GIF"}
                 </span>
-              </div>
-            )}
-            {exportStatus === "success" && (
-              <div
-                className={`${h_styles.exportStatusContent} ${h_styles.exportStatusSuccess}`}
+              </button>
+              <button
+                className={h_styles.dropdownItem}
+                onClick={handleExportVideo}
+                disabled={isExporting}
               >
-                <span>✓ {exportType} exported successfully!</span>
-              </div>
-            )}
-            {exportStatus === "error" && (
-              <div
-                className={`${h_styles.exportStatusContent} ${h_styles.exportStatusError}`}
+                <Download />
+                <span>
+                  {isExporting
+                    ? `Exporting Video... ${Math.round(exportProgress * 100)}%`
+                    : "Export Video"}
+                </span>
+              </button>
+              <button
+                className={h_styles.dropdownItem}
+                onClick={() => {
+                  exportAsJSON(project);
+                  setIsExportDropdownOpen(false);
+                }}
+                disabled={isExporting}
               >
-                <span>✗ Failed to export {exportType}</span>
-              </div>
-            )}
-          </div>
-        )}
+                <Download />
+                <span>Export JSON</span>
+              </button>
+              <button
+                className={h_styles.dropdownItem}
+                onClick={handleImportJSON}
+                disabled={isExporting}
+              >
+                <Download />
+                <span>Import JSON</span>
+              </button>
+            </div>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,application/json"
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+          />
+          {/* Export Status Indicator */}
+          {exportStatus !== "idle" && (
+            <div className={h_styles.exportStatus}>
+              {exportStatus === "exporting" && (
+                <div className={h_styles.exportStatusContent}>
+                  <div className={h_styles.exportSpinner}></div>
+                  <span>
+                    Exporting {exportType}... {Math.round(exportProgress * 100)}
+                    %
+                  </span>
+                </div>
+              )}
+              {exportStatus === "success" && (
+                <div
+                  className={`${h_styles.exportStatusContent} ${h_styles.exportStatusSuccess}`}
+                >
+                  <span>✓ {exportType} exported successfully!</span>
+                </div>
+              )}
+              {exportStatus === "error" && (
+                <div
+                  className={`${h_styles.exportStatusContent} ${h_styles.exportStatusError}`}
+                >
+                  <span>✗ Failed to export {exportType}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>
