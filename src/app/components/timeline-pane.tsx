@@ -338,28 +338,6 @@ const TimelinePane = () => {
             alignment="super"
           />
         </div>
-        <div className="control-group">
-          <ButtonControl
-            label={
-              isExporting
-                ? `Exporting... ${Math.round(exportProgress * 100)}%`
-                : "Export GIF"
-            }
-            onClick={handleExportGIF}
-            icon={<Download />}
-            disabled={isExporting}
-          />
-          <ButtonControl
-            label={
-              isExporting
-                ? `Exporting... ${Math.round(exportProgress * 100)}%`
-                : "Export Video"
-            }
-            onClick={handleExportVideo}
-            icon={<Download />}
-            disabled={isExporting}
-          />
-        </div>
       </div>
 
       <div className="reference-image t-s--large">
@@ -372,20 +350,22 @@ const TimelinePane = () => {
         />
       </div>
 
-      <div className="reference-image t-s--large">
-        <ImageInput
-          label="Reference Image"
-          value={referenceImage}
-          onChange={handleReferenceImageChange}
-        />
-        <RangeInput
-          label="Reference Image Opacity"
-          value={referenceOpacity}
-          clamp={[10, 100]}
-          step={10}
-          onChange={handleReferenceOpacityChange}
-        />
-      </div>
+      {!project.clipMode && (
+        <div className="reference-image t-s--large">
+          <ImageInput
+            label="Reference Image"
+            value={referenceImage}
+            onChange={handleReferenceImageChange}
+          />
+          <RangeInput
+            label="Reference Image Opacity"
+            value={referenceOpacity}
+            clamp={[10, 100]}
+            step={10}
+            onChange={handleReferenceOpacityChange}
+          />
+        </div>
+      )}
       <ImageListInput
         label="Image Library (Max 20)"
         value={project.imageLibrary}
