@@ -8,7 +8,7 @@ import { useProjectContext } from "../context/ProjectContext";
 import { exportAsGIF, exportAsVideo, downloadBlob } from "../utils/export";
 
 const Header = () => {
-  const { project } = useProjectContext();
+  const { project, resetProject } = useProjectContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
@@ -133,7 +133,19 @@ const Header = () => {
           nodes/
         </p>
       </div>
-      <div className={h_styles.exportContainer} ref={dropdownRef}>
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <button
+          className={h_styles.exportButton}
+          onClick={() => {
+            if (confirm("Start a new project? This will reset all frames and nodes.")) {
+              resetProject();
+            }
+          }}
+          style={{ marginRight: 0 }}
+        >
+          <span>New Project</span>
+        </button>
+        <div className={h_styles.exportContainer} ref={dropdownRef}>
         <button
           className={h_styles.exportButton}
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -203,6 +215,7 @@ const Header = () => {
             )}
           </div>
         )}
+        </div>
       </div>
     </header>
   );
