@@ -7,6 +7,7 @@ import RadioInput from "./settings/radio-input";
 import RangeInput from "./settings/range-input";
 import SelectInput from "./settings/select-input";
 import { useProjectContext } from "../context/ProjectContext";
+import ImageInput from "./settings/image-input";
 
 const SettingsPane = () => {
   const { project, updateSettings, setNodeSizeMultiplier } =
@@ -138,6 +139,28 @@ const SettingsPane = () => {
     });
   };
 
+  const handleClipModeChange = (value: string) => {
+    updateSettings({
+      clipMode: value === "On",
+    });
+  };
+
+  const handleClipBackgroundImageChange = (file: File | null) => {
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateSettings({
+          clipBackgroundImage: reader.result as string,
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      updateSettings({
+        clipBackgroundImage: undefined,
+      });
+    }
+  };
+
   return (
     <section className={styles.settingsPane}>
       <div className="group tight">
@@ -151,6 +174,22 @@ const SettingsPane = () => {
           value={project.backgroundColor}
           onChange={handleBackgroundColorChange}
         />
+      </div>
+      <div className="">
+        <RadioInput
+          label="Clip Mode"
+          values={["On", "Off"]}
+          value={project.clipMode ? "On" : "Off"}
+          onChange={handleClipModeChange}
+        />
+        <br />
+        {project.clipMode && (
+          <ImageInput
+            label="Background Image"
+            value={project.clipBackgroundImage || null}
+            onChange={handleClipBackgroundImageChange}
+          />
+        )}
       </div>
       <div className="group">
         <RadioInput
