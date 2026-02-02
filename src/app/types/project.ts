@@ -30,6 +30,8 @@ export interface Project {
   exportQualityGIF: number; // 1-30, lower = better quality
   exportQualityVideo: number; // 0-1, higher = better quality
   showImages: boolean; // Whether to show images on nodes
+  clipMode: boolean; // Whether nodes act as clip paths revealing background image
+  clipBackgroundImage?: string; // Global background image for clip mode (data URL)
 }
 
 export function createEmptyProject(): Project {
@@ -50,6 +52,7 @@ export function createEmptyProject(): Project {
     exportQualityGIF: 10, // Medium quality (lower = better)
     exportQualityVideo: 0.8, // High quality (0-1)
     showImages: true, // Show images by default
+    clipMode: false, // Clip mode disabled by default
   };
 }
 
