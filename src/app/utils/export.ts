@@ -62,8 +62,19 @@ export async function renderFrameToCanvas(
   ctx.fillStyle = project.backgroundColor;
   ctx.fillRect(0, 0, width, height);
 
-  // Draw reference image if it exists
-  if (frame.referenceImage) {
+  // Load clip background image if clip mode is enabled
+  let clipBackgroundImg: HTMLImageElement | undefined;
+  if (project.clipMode && project.clipBackgroundImage) {
+    clipBackgroundImg =
+      imageMap?.get(project.clipBackgroundImage) ||
+      (await loadImage(project.clipBackgroundImage));
+    if (imageMap && !imageMap.has(project.clipBackgroundImage)) {
+      imageMap.set(project.clipBackgroundImage, clipBackgroundImg);
+    }
+  }
+
+  // Draw reference image if it exists (hide when clip mode is enabled)
+  if (frame.referenceImage && !project.clipMode) {
     const img =
       imageMap?.get(frame.referenceImage) ||
       (await loadImage(frame.referenceImage));
@@ -85,6 +96,8 @@ export async function renderFrameToCanvas(
       width,
       height,
       project.showImages,
+      project.clipMode,
+      clipBackgroundImg,
       imageMap,
     );
   });
@@ -112,6 +125,8 @@ function drawNode(
   canvasWidth: number,
   canvasHeight: number,
   showImages: boolean,
+  clipMode: boolean,
+  clipBackgroundImg: HTMLImageElement | undefined,
   imageMap?: Map<string, HTMLImageElement>,
 ) {
   const pixelX = node.x * canvasWidth;
@@ -119,42 +134,56 @@ function drawNode(
   const nodeSize = baseNodeSize * node.size;
   const nodeX = pixelX - nodeSize / 2;
   const nodeY = pixelY - nodeSize / 2;
+  const radius = nodeSize / 2;
 
-  // Draw image if available and images are enabled, otherwise draw solid color
-  if (
-    project.showImages &&
-    node.imageIndex !== undefined &&
-    imageLibrary[node.imageIndex]
-  ) {
-    const imageUrl = imageLibrary[node.imageIndex];
-    const img = imageMap?.get(imageUrl);
-    if (img && img.complete) {
-      // Draw image with aspect ratio preserved
-      const imgAspectRatio = img.width / img.height;
-      let drawWidth = nodeSize;
-      let drawHeight = nodeSize;
-      let drawX = nodeX;
-      let drawY = nodeY;
+  // Clip mode: nodes reveal the background image
+  if (clipMode && clipBackgroundImg) {
+    ctx.save();
+    // Create square clip path
+    ctx.beginPath();
+    ctx.rect(nodeX, nodeY, nodeSize, nodeSize);
+    ctx.clip();
+    // Draw the background image within the clipped area
+    ctx.drawImage(clipBackgroundImg, 0, 0, canvasWidth, canvasHeight);
+    ctx.restore();
+  } else {
+    // Normal mode: draw image on node or solid color
+    // Draw image if available and images are enabled, otherwise draw solid color
+    if (
+      showImages &&
+      node.imageIndex !== undefined &&
+      imageLibrary[node.imageIndex]
+    ) {
+      const imageUrl = imageLibrary[node.imageIndex];
+      const img = imageMap?.get(imageUrl);
+      if (img && img.complete) {
+        // Draw image with aspect ratio preserved
+        const imgAspectRatio = img.width / img.height;
+        let drawWidth = nodeSize;
+        let drawHeight = nodeSize;
+        let drawX = nodeX;
+        let drawY = nodeY;
 
-      // Calculate dimensions to fit within nodeSize while preserving aspect ratio
-      if (imgAspectRatio > 1) {
-        // Image is wider than tall
-        drawHeight = nodeSize / imgAspectRatio;
-        drawY = nodeY + (nodeSize - drawHeight) / 2;
+        // Calculate dimensions to fit within nodeSize while preserving aspect ratio
+        if (imgAspectRatio > 1) {
+          // Image is wider than tall
+          drawHeight = nodeSize / imgAspectRatio;
+          drawY = nodeY + (nodeSize - drawHeight) / 2;
+        } else {
+          // Image is taller than wide or square
+          drawWidth = nodeSize * imgAspectRatio;
+          drawX = nodeX + (nodeSize - drawWidth) / 2;
+        }
+
+        ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
       } else {
-        // Image is taller than wide or square
-        drawWidth = nodeSize * imgAspectRatio;
-        drawX = nodeX + (nodeSize - drawWidth) / 2;
+        ctx.fillStyle = nodeColor;
+        ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
       }
-
-      ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
     } else {
       ctx.fillStyle = nodeColor;
       ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
     }
-  } else {
-    ctx.fillStyle = nodeColor;
-    ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
   }
 }
 
@@ -293,6 +322,10 @@ export async function exportAsVideo(
     // Load all images first
     const imageMap = new Map<string, HTMLImageElement>();
     const imageUrls = new Set<string>();
+    // Add clip background image if clip mode is enabled
+    if (project.clipMode && project.clipBackgroundImage) {
+      imageUrls.add(project.clipBackgroundImage);
+    }
     project.frames.forEach((frame) => {
       if (frame.referenceImage) {
         imageUrls.add(frame.referenceImage);
@@ -328,8 +361,8 @@ export async function exportAsVideo(
       ctx.fillStyle = project.backgroundColor;
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-      // Draw reference image
-      if (frame.referenceImage) {
+      // Draw reference image (hide when clip mode is enabled)
+      if (frame.referenceImage && !project.clipMode) {
         const img = imageMap.get(frame.referenceImage);
         if (img) {
           ctx.save();
@@ -338,6 +371,12 @@ export async function exportAsVideo(
           ctx.restore();
         }
       }
+
+      // Load clip background image if clip mode is enabled
+      const clipBackgroundImg =
+        project.clipMode && project.clipBackgroundImage
+          ? imageMap.get(project.clipBackgroundImage)
+          : undefined;
 
       // Draw nodes
       const baseNodeSize = project.nodeSize * project.nodeSizeMultiplier;
@@ -348,41 +387,53 @@ export async function exportAsVideo(
         const nodeX = pixelX - nodeSize / 2;
         const nodeY = pixelY - nodeSize / 2;
 
-        // Draw node image if available and images are enabled
-        if (
-          project.showImages &&
-          node.imageIndex !== undefined &&
-          project.imageLibrary[node.imageIndex]
-        ) {
-          const imageUrl = project.imageLibrary[node.imageIndex];
-          const img = imageMap.get(imageUrl);
-          if (img && img.complete) {
-            // Draw image with aspect ratio preserved
-            const imgAspectRatio = img.width / img.height;
-            let drawWidth = nodeSize;
-            let drawHeight = nodeSize;
-            let drawX = nodeX;
-            let drawY = nodeY;
+        // Clip mode: nodes reveal the background image
+        if (project.clipMode && clipBackgroundImg) {
+          ctx.save();
+          // Create square clip path
+          ctx.beginPath();
+          ctx.rect(nodeX, nodeY, nodeSize, nodeSize);
+          ctx.clip();
+          // Draw the background image within the clipped area
+          ctx.drawImage(clipBackgroundImg, 0, 0, canvasWidth, canvasHeight);
+          ctx.restore();
+        } else {
+          // Normal mode: draw node image if available and images are enabled
+          if (
+            project.showImages &&
+            node.imageIndex !== undefined &&
+            project.imageLibrary[node.imageIndex]
+          ) {
+            const imageUrl = project.imageLibrary[node.imageIndex];
+            const img = imageMap.get(imageUrl);
+            if (img && img.complete) {
+              // Draw image with aspect ratio preserved
+              const imgAspectRatio = img.width / img.height;
+              let drawWidth = nodeSize;
+              let drawHeight = nodeSize;
+              let drawX = nodeX;
+              let drawY = nodeY;
 
-            // Calculate dimensions to fit within nodeSize while preserving aspect ratio
-            if (imgAspectRatio > 1) {
-              // Image is wider than tall
-              drawHeight = nodeSize / imgAspectRatio;
-              drawY = nodeY + (nodeSize - drawHeight) / 2;
+              // Calculate dimensions to fit within nodeSize while preserving aspect ratio
+              if (imgAspectRatio > 1) {
+                // Image is wider than tall
+                drawHeight = nodeSize / imgAspectRatio;
+                drawY = nodeY + (nodeSize - drawHeight) / 2;
+              } else {
+                // Image is taller than wide or square
+                drawWidth = nodeSize * imgAspectRatio;
+                drawX = nodeX + (nodeSize - drawWidth) / 2;
+              }
+
+              ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
             } else {
-              // Image is taller than wide or square
-              drawWidth = nodeSize * imgAspectRatio;
-              drawX = nodeX + (nodeSize - drawWidth) / 2;
+              ctx.fillStyle = project.nodeColor;
+              ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
             }
-
-            ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
           } else {
             ctx.fillStyle = project.nodeColor;
             ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
           }
-        } else {
-          ctx.fillStyle = project.nodeColor;
-          ctx.fillRect(nodeX, nodeY, nodeSize, nodeSize);
         }
       });
 
