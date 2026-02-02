@@ -462,3 +462,10 @@ export function downloadBlob(blob: Blob, filename: string) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+// Export project as JSON
+export function exportAsJSON(project: Project): void {
+  const json = JSON.stringify(project, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  downloadBlob(blob, `nodes-project-${Date.now()}.json`);
+}

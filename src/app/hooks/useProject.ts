@@ -8,8 +8,149 @@ import {
   createFrame,
 } from "../types/project";
 
+const STORAGE_KEY = "nodes-project-slots";
+const CURRENT_SLOT_KEY = "nodes-current-slot";
+
+type ProjectSlots = {
+  slot1: Project | null;
+  slot2: Project | null;
+  slot3: Project | null;
+};
+
+type ProjectInfo = {
+  slot: 1 | 2 | 3;
+  name: string;
+  isEmpty: boolean;
+};
+
+// Load all project slots from localStorage
+function loadProjectSlotsFromStorage(): ProjectSlots {
+  if (typeof window === "undefined") {
+    return { slot1: null, slot2: null, slot3: null };
+  }
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return { slot1: null, slot2: null, slot3: null };
+
+    const parsed = JSON.parse(stored);
+    // Validate structure
+    if (parsed && typeof parsed === "object") {
+      return {
+        slot1:
+          parsed.slot1 && Array.isArray(parsed.slot1.frames)
+            ? parsed.slot1
+            : null,
+        slot2:
+          parsed.slot2 && Array.isArray(parsed.slot2.frames)
+            ? parsed.slot2
+            : null,
+        slot3:
+          parsed.slot3 && Array.isArray(parsed.slot3.frames)
+            ? parsed.slot3
+            : null,
+      };
+    }
+  } catch (error) {
+    console.error("Failed to load project slots from localStorage:", error);
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  return { slot1: null, slot2: null, slot3: null };
+}
+
+// Get current slot index from localStorage
+function getCurrentSlotFromStorage(): 1 | 2 | 3 {
+  if (typeof window === "undefined") return 1;
+
+  try {
+    const stored = localStorage.getItem(CURRENT_SLOT_KEY);
+    if (stored === "2" || stored === "3") {
+      return parseInt(stored) as 1 | 2 | 3;
+    }
+  } catch (error) {
+    console.error("Failed to load current slot from localStorage:", error);
+  }
+
+  return 1;
+}
+
+// Save current slot index to localStorage
+function saveCurrentSlotToStorage(slot: 1 | 2 | 3): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.setItem(CURRENT_SLOT_KEY, slot.toString());
+  } catch (error) {
+    console.error("Failed to save current slot to localStorage:", error);
+  }
+}
+
+// Load project from specific slot
+function loadProjectFromSlot(slot: 1 | 2 | 3): Project | null {
+  const slots = loadProjectSlotsFromStorage();
+  const slotKey = `slot${slot}` as keyof ProjectSlots;
+  return slots[slotKey];
+}
+
+// Save project to specific slot
+function saveProjectToSlot(project: Project, slot: 1 | 2 | 3): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    const slots = loadProjectSlotsFromStorage();
+    const slotKey = `slot${slot}` as keyof ProjectSlots;
+    slots[slotKey] = project;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(slots));
+  } catch (error) {
+    console.error("Failed to save project to localStorage:", error);
+    // Handle quota exceeded error
+    if (error instanceof DOMException && error.name === "QuotaExceededError") {
+      console.warn("localStorage quota exceeded");
+    }
+  }
+}
+
+// Get list of all projects with their info
+function getProjectsList(): ProjectInfo[] {
+  const slots = loadProjectSlotsFromStorage();
+  return [
+    {
+      slot: 1,
+      name: slots.slot1?.name || "Empty",
+      isEmpty: !slots.slot1,
+    },
+    {
+      slot: 2,
+      name: slots.slot2?.name || "Empty",
+      isEmpty: !slots.slot2,
+    },
+    {
+      slot: 3,
+      name: slots.slot3?.name || "Empty",
+      isEmpty: !slots.slot3,
+    },
+  ];
+}
+
 export function useProject() {
-  const [project, setProject] = useState<Project>(() => createEmptyProject());
+  const [currentSlot, setCurrentSlot] = useState<1 | 2 | 3>(() =>
+    getCurrentSlotFromStorage(),
+  );
+  const [project, setProject] = useState<Project>(() => {
+    // Try to load from current slot, fallback to empty project
+    const slot = getCurrentSlotFromStorage();
+    const loaded = loadProjectFromSlot(slot);
+    if (loaded) {
+      // Ensure name exists (for backward compatibility)
+      return {
+        ...createEmptyProject(),
+        ...loaded,
+        name: loaded.name || "Untitled",
+      };
+    }
+    return createEmptyProject();
+  });
   const projectRef = useRef<Project>(project);
 
   // History stacks for undo/redo
@@ -23,6 +164,30 @@ export function useProject() {
   useEffect(() => {
     projectRef.current = project;
   }, [project]);
+
+  // Save project to localStorage whenever it changes
+  useEffect(() => {
+    saveProjectToSlot(project, currentSlot);
+  }, [project, currentSlot]);
+
+  // Switch to a different slot
+  const switchSlot = (slot: 1 | 2 | 3) => {
+    // Save current project before switching
+    saveProjectToSlot(projectRef.current, currentSlot);
+
+    // Load project from new slot
+    const newProject = loadProjectFromSlot(slot) || createEmptyProject();
+    setProject(newProject);
+    projectRef.current = newProject;
+    setCurrentSlot(slot);
+    saveCurrentSlotToStorage(slot);
+
+    // Reset history for new slot
+    historyRef.current = [];
+    futureRef.current = [];
+    setCanUndo(false);
+    setCanRedo(false);
+  };
 
   // Helper to save current state to history
   const saveToHistory = (currentProject: Project) => {
@@ -442,14 +607,109 @@ export function useProject() {
     setProject(restoredState);
   };
 
-  const resetProject = () => {
-    const newProject = createEmptyProject();
+  const createNewProject = (name?: string) => {
+    // Save current project before creating new one
+    saveProjectToSlot(projectRef.current, currentSlot);
+
+    // Find an empty slot, or use the first slot if all are full
+    const projectsList = getProjectsList();
+    const emptySlot = projectsList.find((p) => p.isEmpty);
+    const targetSlot = emptySlot ? emptySlot.slot : 1;
+
+    // Create new project with the given name
+    const newProject = createEmptyProject(name);
+
+    // Save to target slot
+    saveProjectToSlot(newProject, targetSlot);
+
+    // Switch to the target slot (this will load the project we just saved)
+    if (targetSlot !== currentSlot) {
+      setCurrentSlot(targetSlot);
+      saveCurrentSlotToStorage(targetSlot);
+    }
+
+    // Set the new project as current
     setProject(newProject);
     projectRef.current = newProject;
     historyRef.current = [];
     futureRef.current = [];
     setCanUndo(false);
     setCanRedo(false);
+  };
+
+  const deleteCurrentProject = () => {
+    // Clear current slot
+    const slots = loadProjectSlotsFromStorage();
+    const slotKey = `slot${currentSlot}` as keyof ProjectSlots;
+    slots[slotKey] = null;
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(slots));
+    }
+
+    // If this was the only project, create a new empty one
+    const projectsList = getProjectsList();
+    const hasOtherProjects = projectsList.some(
+      (p) => !p.isEmpty && p.slot !== currentSlot,
+    );
+
+    if (hasOtherProjects) {
+      // Switch to first available project
+      const firstAvailable = projectsList.find(
+        (p) => !p.isEmpty && p.slot !== currentSlot,
+      );
+      if (firstAvailable) {
+        switchSlot(firstAvailable.slot);
+      }
+    } else {
+      // Create new empty project
+      createNewProject("Untitled");
+    }
+  };
+
+  const updateProjectName = (name: string) => {
+    setProject((prev) => ({
+      ...prev,
+      name,
+    }));
+    // Save will happen automatically via useEffect
+  };
+
+  const resetProject = () => {
+    createNewProject();
+  };
+
+  const importProject = (importedProject: Project) => {
+    // Validate imported project structure
+    if (
+      !importedProject ||
+      typeof importedProject !== "object" ||
+      !Array.isArray(importedProject.frames)
+    ) {
+      throw new Error("Invalid project format");
+    }
+
+    // Ensure all required fields exist with defaults
+    const validatedProject: Project = {
+      ...createEmptyProject(),
+      ...importedProject,
+      // Ensure name exists
+      name: importedProject.name || "Untitled",
+      // Ensure frames array exists and is valid
+      frames: importedProject.frames.map((frame) => ({
+        ...createFrame(),
+        ...frame,
+        nodes: frame.nodes || [],
+      })),
+    };
+
+    setProject(validatedProject);
+    projectRef.current = validatedProject;
+    historyRef.current = [];
+    futureRef.current = [];
+    setCanUndo(false);
+    setCanRedo(false);
+    // Save to current slot
+    saveProjectToSlot(validatedProject, currentSlot);
   };
 
   return {
@@ -471,6 +731,13 @@ export function useProject() {
     redo,
     canUndo,
     canRedo,
-    resetProject,
+    resetProject: createNewProject, // Keep for backward compatibility
+    createNewProject,
+    deleteCurrentProject,
+    updateProjectName,
+    importProject,
+    currentSlot,
+    switchSlot,
+    getProjectsList,
   };
 }

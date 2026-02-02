@@ -14,6 +14,7 @@ export interface Frame {
 }
 
 export interface Project {
+  name: string; // Project name for identification
   canvasSize: [number, number];
   backgroundColor: string;
   nodeSize: number;
@@ -34,8 +35,9 @@ export interface Project {
   clipBackgroundImage?: string; // Global background image for clip mode (data URL)
 }
 
-export function createEmptyProject(): Project {
+export function createEmptyProject(name?: string): Project {
   return {
+    name: name || "Untitled",
     canvasSize: [500, 500],
     backgroundColor: "#E5E5E5",
     nodeSize: 40,
