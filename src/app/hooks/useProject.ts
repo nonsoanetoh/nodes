@@ -442,6 +442,16 @@ export function useProject() {
     setProject(restoredState);
   };
 
+  const resetProject = () => {
+    const newProject = createEmptyProject();
+    setProject(newProject);
+    projectRef.current = newProject;
+    historyRef.current = [];
+    futureRef.current = [];
+    setCanUndo(false);
+    setCanRedo(false);
+  };
+
   return {
     project,
     addNode,
@@ -461,5 +471,6 @@ export function useProject() {
     redo,
     canUndo,
     canRedo,
+    resetProject,
   };
 }
