@@ -11,6 +11,7 @@ const RangeInput: FC<RangeInputProps> = ({
   shortcut,
   triggeredKey,
   showValueIndicator,
+  indicatorThumbnail,
   onChange,
 }) => {
   const [mounted, setMounted] = useState<boolean>(false);
@@ -121,17 +122,30 @@ const RangeInput: FC<RangeInputProps> = ({
           {showValueIndicator && (
             <div
               ref={indicatorRef}
-              className="value-indicator"
+              className={`value-indicator${indicatorThumbnail ? " value-indicator--thumb" : ""}`}
               style={{
                 left: `${indicatorPosition}px`,
                 cursor: isDragging ? "grabbing" : "grab",
               }}
               onMouseDown={handleIndicatorMouseDown}
             >
-              <span className="value-text">
-                {valueText}
-              </span>
-              <div className="value-arrow" />
+              {indicatorThumbnail ? (
+                <div className="value-indicator-thumb">
+                  <img
+                    src={indicatorThumbnail}
+                    alt=""
+                    className="value-indicator-thumb__img"
+                  />
+                  <span className="value-indicator-thumb__text">
+                    {valueText}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <span className="value-text">{valueText}</span>
+                  <div className="value-arrow" />
+                </>
+              )}
             </div>
           )}
           <input

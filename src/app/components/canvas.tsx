@@ -6,7 +6,7 @@ import styles from "../styles/canvas.module.css";
 
 export default function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { project, addNode, updateNodePosition, removeNode } =
+  const { project, addNode, updateNodePosition, removeNode, setFrameThumbnail } =
     useProjectContext();
   const isPlaying = project.isPlaying;
 
@@ -572,6 +572,31 @@ export default function Canvas() {
       ctx.fillStyle = hexToRgba(project.nodeColor, 0.35);
       ctx.fillRect(previewNodeX, previewNodeY, previewSize, previewSize);
     }
+
+    // Capture thumbnail for playback slider (small preview of current frame)
+    if (canvasDisplayWidth > 0 && canvasDisplayHeight > 0) {
+      const thumbSize = 40;
+      const off = document.createElement("canvas");
+      off.width = thumbSize;
+      off.height = thumbSize;
+      const tctx = off.getContext("2d");
+      if (tctx) {
+        tctx.drawImage(
+          canvas,
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+          0,
+          0,
+          thumbSize,
+          thumbSize,
+        );
+        if (currentFrame?.id) {
+          setFrameThumbnail(currentFrame.id, off.toDataURL("image/jpeg", 0.85));
+        }
+      }
+    }
   }, [
     canvasWidth,
     canvasHeight,
@@ -594,6 +619,7 @@ export default function Canvas() {
     hoveredNodeId,
     getCanvasDisplayDimensions,
     loadedImagesKey,
+    setFrameThumbnail,
   ]);
 
   return (

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Project,
   Frame,
@@ -147,6 +147,12 @@ export function useProject() {
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const maxHistorySize = 50;
+  const [frameThumbnails, setFrameThumbnails] = useState<Record<string, string>>(
+    () => ({}),
+  );
+  const setFrameThumbnail = useCallback((frameId: string, url: string) => {
+    setFrameThumbnails((prev) => ({ ...prev, [frameId]: url }));
+  }, []);
 
   // Keep ref in sync with project state
   useEffect(() => {
@@ -395,6 +401,28 @@ export function useProject() {
       return {
         ...prev,
         frames: updatedFrames,
+      };
+    });
+  };
+
+  const reorderFrames = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    updateProjectWithHistory((prev) => {
+      const frames = [...prev.frames];
+      const [moved] = frames.splice(fromIndex, 1);
+      frames.splice(toIndex, 0, moved);
+      let newCurrent = prev.currentFrameIndex;
+      if (prev.currentFrameIndex === fromIndex) {
+        newCurrent = toIndex;
+      } else if (fromIndex < toIndex && prev.currentFrameIndex > fromIndex && prev.currentFrameIndex <= toIndex) {
+        newCurrent = prev.currentFrameIndex - 1;
+      } else if (fromIndex > toIndex && prev.currentFrameIndex >= toIndex && prev.currentFrameIndex < fromIndex) {
+        newCurrent = prev.currentFrameIndex + 1;
+      }
+      return {
+        ...prev,
+        frames,
+        currentFrameIndex: newCurrent,
       };
     });
   };
@@ -764,6 +792,7 @@ export function useProject() {
     addFrame,
     removeFrame,
     duplicateFrame,
+    reorderFrames,
     updateSettings,
     setIsPlaying,
     updateFrameReferenceImage,
@@ -781,5 +810,7 @@ export function useProject() {
     currentSlot,
     switchSlot,
     getProjectsList,
+    frameThumbnails,
+    setFrameThumbnail,
   };
 }

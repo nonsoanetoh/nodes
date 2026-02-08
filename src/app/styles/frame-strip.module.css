@@ -1,0 +1,90 @@
+.strip {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.25rem;
+  align-items: center;
+  overflow-x: auto;
+  padding: 0.25rem 0;
+  margin-top: 0.5rem;
+  margin-bottom: 4rem;
+  min-height: 52px;
+  scrollbar-width: thin;
+  scrollbar-color: #999 #e8e8e8;
+}
+
+/* webkit scrollbar (Chrome, Safari, Edge) */
+.strip::-webkit-scrollbar {
+  height: 6px;
+}
+
+.strip::-webkit-scrollbar-track {
+  background: #e8e8e8;
+  border-radius: 0.25rem;
+}
+
+.strip::-webkit-scrollbar-thumb {
+  background: #999;
+  border-radius: 0.25rem;
+}
+
+.strip::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+.frame {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #ccc;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  cursor: grab;
+  background: #e8e8e8;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.frame:hover {
+  border-color: #999;
+}
+
+.frame:active {
+  cursor: grabbing;
+}
+
+.frameCurrent {
+  border-color: #22bb28;
+  box-shadow: 0 0 0 1px #22bb28;
+}
+
+.frameDragging {
+  opacity: 0.6;
+  cursor: grabbing;
+}
+
+.frameDropTarget {
+  border-color: #22bb28;
+  box-shadow: 0 0 0 2px #22bb28;
+}
+
+.frameThumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.framePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.frameNumber {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 500;
+}

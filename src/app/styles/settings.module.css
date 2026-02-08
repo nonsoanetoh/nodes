@@ -647,7 +647,7 @@
 
 :global(.setting__range-input) :global(.value-indicator) {
   position: absolute;
-  bottom: -2rem;
+  bottom: -2.5rem;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column-reverse;
@@ -655,6 +655,10 @@
   pointer-events: auto;
   z-index: 10;
   user-select: none;
+}
+
+:global(.setting__range-input) :global(.value-indicator--thumb) {
+  bottom: -3.75rem;
 }
 
 :global(.setting__range-input) :global(.value-text) {
@@ -665,6 +669,30 @@
   color: #333;
   white-space: nowrap;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+:global(.setting__range-input) :global(.value-indicator-thumb) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #e0e0e0;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+:global(.setting__range-input) :global(.value-indicator-thumb__img) {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+
+:global(.setting__range-input) :global(.value-indicator-thumb__text) {
+  font-size: 0.625rem;
+  color: #333;
+  padding: 0.125rem 0.25rem;
+  white-space: nowrap;
 }
 
 :global(.setting__range-input) :global(.value-arrow) {

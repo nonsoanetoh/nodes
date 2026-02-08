@@ -27,6 +27,8 @@ export interface RangeInputProps extends SettingProps {
   onChange: (value: number) => void;
   triggeredKey?: string | null;
   showValueIndicator?: boolean;
+  /** Optional image URL (e.g. data URL) for the draggable indicator, e.g. frame thumbnail */
+  indicatorThumbnail?: string | null;
 }
 
 export interface ButtonControlProps extends SettingProps {

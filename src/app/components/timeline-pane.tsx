@@ -17,6 +17,7 @@ import Undo from "./icons/undo";
 import Download from "./icons/download";
 import { useProjectContext } from "../context/ProjectContext";
 import { exportAsGIF, exportAsVideo, downloadBlob } from "../utils/export";
+import FrameStrip from "./frame-strip";
 
 const TimelinePane = () => {
   const {
@@ -35,6 +36,8 @@ const TimelinePane = () => {
     redo,
     canUndo,
     canRedo,
+    frameThumbnails,
+    reorderFrames,
   } = useProjectContext();
   const isPlaying = project.isPlaying;
   const [triggeredShortcut, setTriggeredShortcut] = useState<string | null>(
@@ -298,7 +301,13 @@ const TimelinePane = () => {
         shortcut={[",", "."]}
         onChange={handleFrameChange}
         triggeredKey={triggeredShortcut}
-        showValueIndicator={true}
+      />
+      <FrameStrip
+        frames={project.frames}
+        frameThumbnails={frameThumbnails}
+        currentFrameIndex={project.currentFrameIndex}
+        onSelectFrame={setCurrentFrame}
+        onReorder={reorderFrames}
       />
 
       <div className="row">
