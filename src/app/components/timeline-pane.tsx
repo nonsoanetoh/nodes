@@ -25,6 +25,7 @@ const TimelinePane = () => {
     addFrame,
     removeFrame,
     duplicateFrame,
+    clearFrameNodes,
     updateSettings,
     setIsPlaying,
     updateFrameReferenceImage,
@@ -275,8 +276,20 @@ const TimelinePane = () => {
     setCurrentFrame,
   ]);
 
+  const handleClearNodes = (_label: string) => {
+    clearFrameNodes(project.currentFrameIndex);
+  };
+
   return (
     <section className={styles.timeline}>
+      <div className={styles.clearNodesContainer}>
+        <ButtonControl
+          label="Clear nodes"
+          onClick={handleClearNodes}
+          icon={<Remove />}
+          showLabel={true}
+        />
+      </div>
       <RangeInput
         label={"Playback"}
         value={currentFrameNumber}

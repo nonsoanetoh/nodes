@@ -134,23 +134,11 @@ function getProjectsList(): ProjectInfo[] {
 }
 
 export function useProject() {
-  const [currentSlot, setCurrentSlot] = useState<1 | 2 | 3>(() =>
-    getCurrentSlotFromStorage(),
-  );
-  const [project, setProject] = useState<Project>(() => {
-    // Try to load from current slot, fallback to empty project
-    const slot = getCurrentSlotFromStorage();
-    const loaded = loadProjectFromSlot(slot);
-    if (loaded) {
-      // Ensure name exists (for backward compatibility)
-      return {
-        ...createEmptyProject(),
-        ...loaded,
-        name: loaded.name || "Untitled",
-      };
-    }
-    return createEmptyProject();
-  });
+  // Deterministic initial state so server and client first render match (avoids hydration mismatch).
+  // We hydrate from localStorage in useEffect after mount.
+  const [currentSlot, setCurrentSlot] = useState<1 | 2 | 3>(1);
+  const [project, setProject] = useState<Project>(() => createEmptyProject());
+  const [hasHydrated, setHasHydrated] = useState(false);
   const projectRef = useRef<Project>(project);
 
   // History stacks for undo/redo
@@ -165,10 +153,28 @@ export function useProject() {
     projectRef.current = project;
   }, [project]);
 
-  // Save project to localStorage whenever it changes
+  // Hydrate from localStorage after mount (client-only)
   useEffect(() => {
+    const slot = getCurrentSlotFromStorage();
+    const loaded = loadProjectFromSlot(slot);
+    if (loaded) {
+      setCurrentSlot(slot);
+      setProject({
+        ...createEmptyProject(),
+        ...loaded,
+        name: loaded.name || "Untitled",
+      });
+    } else {
+      setCurrentSlot(slot);
+    }
+    setHasHydrated(true);
+  }, []);
+
+  // Save project to localStorage whenever it changes (only after hydration to avoid overwriting with default)
+  useEffect(() => {
+    if (!hasHydrated) return;
     saveProjectToSlot(project, currentSlot);
-  }, [project, currentSlot]);
+  }, [project, currentSlot, hasHydrated]);
 
   // Switch to a different slot
   const switchSlot = (slot: 1 | 2 | 3) => {
@@ -306,6 +312,22 @@ export function useProject() {
       updatedFrames[frameIndex] = {
         ...frame,
         nodes: frame.nodes.filter((node) => node.id !== nodeId),
+      };
+      return {
+        ...prev,
+        frames: updatedFrames,
+      };
+    });
+  };
+
+  const clearFrameNodes = (frameIndex: number) => {
+    updateProjectWithHistory((prev) => {
+      const updatedFrames = [...prev.frames];
+      const frame = updatedFrames[frameIndex];
+      if (frame.nodes.length === 0) return prev;
+      updatedFrames[frameIndex] = {
+        ...frame,
+        nodes: [],
       };
       return {
         ...prev,
@@ -736,6 +758,7 @@ export function useProject() {
     addNode,
     updateNodePosition,
     removeNode,
+    clearFrameNodes,
     setNodeSizeMultiplier,
     setCurrentFrame,
     addFrame,

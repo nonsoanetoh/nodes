@@ -28,3 +28,14 @@
 .timeline :global(.reference-image) {
   margin-top: 2rem;
 }
+
+.clearNodesContainer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.clearNodesContainer :global(.setting) {
+  margin-bottom: 0;
+}
