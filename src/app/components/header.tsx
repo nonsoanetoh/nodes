@@ -39,6 +39,10 @@ const Header = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const statusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
