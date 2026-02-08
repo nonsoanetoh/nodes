@@ -15,6 +15,11 @@ const ImageInput: FC<ImageInputProps> = ({ label, value, onChange }) => {
     setMounted(true);
   }, []);
 
+  // When value changes (e.g. switching frames), clear local preview so we show the current frame's image
+  useEffect(() => {
+    setLocalPreviewUrl(null);
+  }, [value]);
+
   const previewUrl = value || localPreviewUrl;
   const showPreview = mounted && previewUrl;
 
