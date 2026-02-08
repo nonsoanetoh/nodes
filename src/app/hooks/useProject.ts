@@ -638,7 +638,7 @@ export function useProject() {
   };
 
   const deleteCurrentProject = () => {
-    // Clear current slot
+    // Clear current slot in storage (do not save current project — we're deleting it)
     const slots = loadProjectSlotsFromStorage();
     const slotKey = `slot${currentSlot}` as keyof ProjectSlots;
     slots[slotKey] = null;
@@ -646,23 +646,42 @@ export function useProject() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(slots));
     }
 
-    // If this was the only project, create a new empty one
+    // Re-read list after clearing; getProjectsList() reads from storage
     const projectsList = getProjectsList();
-    const hasOtherProjects = projectsList.some(
-      (p) => !p.isEmpty && p.slot !== currentSlot,
-    );
+    const hasOtherProjects = projectsList.some((p) => !p.isEmpty);
 
     if (hasOtherProjects) {
-      // Switch to first available project
-      const firstAvailable = projectsList.find(
-        (p) => !p.isEmpty && p.slot !== currentSlot,
-      );
+      // Switch to first available project without saving current (already cleared)
+      const firstAvailable = projectsList.find((p) => !p.isEmpty);
       if (firstAvailable) {
-        switchSlot(firstAvailable.slot);
+        const targetSlot = firstAvailable.slot;
+        const newProject =
+          loadProjectFromSlot(targetSlot) ||
+          createEmptyProject(firstAvailable.name === "Empty" ? "Untitled" : firstAvailable.name);
+        const validatedProject = {
+          ...createEmptyProject(),
+          ...newProject,
+          name: newProject.name || "Untitled",
+        };
+        setProject(validatedProject);
+        projectRef.current = validatedProject;
+        setCurrentSlot(targetSlot);
+        saveCurrentSlotToStorage(targetSlot);
+        historyRef.current = [];
+        futureRef.current = [];
+        setCanUndo(false);
+        setCanRedo(false);
       }
     } else {
-      // Create new empty project
-      createNewProject("Untitled");
+      // No other projects: create a new empty one in current slot
+      const newProject = createEmptyProject("Untitled");
+      setProject(newProject);
+      projectRef.current = newProject;
+      saveProjectToSlot(newProject, currentSlot);
+      historyRef.current = [];
+      futureRef.current = [];
+      setCanUndo(false);
+      setCanRedo(false);
     }
   };
 
