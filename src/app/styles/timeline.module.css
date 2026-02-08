@@ -5,7 +5,7 @@
 }
 
 .timeline :global(.setting__range-input) {
-  margin-bottom: 4rem;
+  margin-bottom: 0;
 }
 
 .timeline :global(.row) {
