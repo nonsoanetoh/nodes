@@ -1,5 +1,5 @@
 "use client";
-import React, { FC, useRef, useState } from "react";
+import React, { FC, useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import styles from "../../styles/settings.module.css";
 import { ImageInputProps } from "../../types/settings";
@@ -9,8 +9,14 @@ import Remove from "../icons/remove";
 const ImageInput: FC<ImageInputProps> = ({ label, value, onChange }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const previewUrl = value || localPreviewUrl;
+  const showPreview = mounted && previewUrl;
 
   const handleClick = () => {
     fileInputRef.current?.click();
@@ -58,10 +64,10 @@ const ImageInput: FC<ImageInputProps> = ({ label, value, onChange }) => {
             onChange={handleFileChange}
             style={{ display: "none" }}
           />
-          {previewUrl ? (
-            <div style={{ position: "relative", display: "inline-block" }}>
+          {showPreview ? (
+            <div className="image-preview-wrap">
               <Image
-                src={previewUrl}
+                src={previewUrl!}
                 alt={label}
                 className="image-preview"
                 width={32}
@@ -70,22 +76,8 @@ const ImageInput: FC<ImageInputProps> = ({ label, value, onChange }) => {
               />
               <button
                 type="button"
+                className="image-preview-remove"
                 onClick={handleRemove}
-                style={{
-                  position: "absolute",
-                  top: -4,
-                  right: -4,
-                  background: "white",
-                  border: "1px solid #ccc",
-                  borderRadius: "50%",
-                  width: "18px",
-                  height: "18px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  padding: 0,
-                }}
                 title="Remove image"
               >
                 <Remove />

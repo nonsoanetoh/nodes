@@ -353,12 +353,12 @@ const TimelinePane = () => {
       {!project.clipMode && (
         <div className="reference-image t-s--large">
           <ImageInput
-            label="Reference Image"
+            label={`Reference Image (Frame ${currentFrameNumber})`}
             value={referenceImage}
             onChange={handleReferenceImageChange}
           />
           <RangeInput
-            label="Reference Image Opacity"
+            label={`Reference Opacity (Frame ${currentFrameNumber})`}
             value={referenceOpacity}
             clamp={[10, 100]}
             step={10}
