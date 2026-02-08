@@ -91,7 +91,10 @@ const RangeInput: FC<RangeInputProps> = ({
     };
   }, [isDragging, showValueIndicator, clamp, step, onChange]);
 
-  const displayValue = mounted ? inputValue : value;
+  // Use stable placeholder when !mounted so server and client HTML match (avoid hydration mismatch).
+  // Only show numeric value after mount; before that show a neutral placeholder so SSR and first client paint match.
+  const displayValue = mounted ? inputValue : clamp[0];
+  const valueText = mounted ? `${inputValue} / ${clamp[1]}` : "–";
   const percentage = ((displayValue - clamp[0]) / (clamp[1] - clamp[0])) * 100;
 
   return (
@@ -126,7 +129,7 @@ const RangeInput: FC<RangeInputProps> = ({
               onMouseDown={handleIndicatorMouseDown}
             >
               <span className="value-text">
-                {mounted ? inputValue : value} / {clamp[1]}
+                {valueText}
               </span>
               <div className="value-arrow" />
             </div>
@@ -134,7 +137,7 @@ const RangeInput: FC<RangeInputProps> = ({
           <input
             ref={sliderRef}
             type="range"
-            value={inputValue}
+            value={mounted ? inputValue : clamp[0]}
             min={clamp[0]}
             max={clamp[1]}
             step={step}
