@@ -73,16 +73,7 @@ export async function renderFrameToCanvas(
     }
   }
 
-  // Draw reference image if it exists (hide when clip mode is enabled)
-  if (frame.referenceImage && !project.clipMode) {
-    const img =
-      imageMap?.get(frame.referenceImage) ||
-      (await loadImage(frame.referenceImage));
-    ctx.save();
-    ctx.globalAlpha = (frame.referenceOpacity || 100) / 100;
-    ctx.drawImage(img, 0, 0, width, height);
-    ctx.restore();
-  }
+  // Export does not include reference image (guide only for editing)
 
   // Draw nodes
   const baseNodeSize = project.nodeSize * project.nodeSizeMultiplier;
@@ -211,12 +202,9 @@ export async function exportAsGIF(
   const imagePromises: Promise<HTMLImageElement>[] = [];
   const imageMap = new Map<string, HTMLImageElement>();
 
-  // Collect all unique image URLs
+  // Collect all unique image URLs (exclude reference images; not drawn in export)
   const imageUrls = new Set<string>();
   project.frames.forEach((frame) => {
-    if (frame.referenceImage) {
-      imageUrls.add(frame.referenceImage);
-    }
     frame.nodes.forEach((node) => {
       if (
         node.imageIndex !== undefined &&
@@ -327,9 +315,6 @@ export async function exportAsVideo(
       imageUrls.add(project.clipBackgroundImage);
     }
     project.frames.forEach((frame) => {
-      if (frame.referenceImage) {
-        imageUrls.add(frame.referenceImage);
-      }
       frame.nodes.forEach((node) => {
         if (
           node.imageIndex !== undefined &&
@@ -361,16 +346,7 @@ export async function exportAsVideo(
       ctx.fillStyle = project.backgroundColor;
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-      // Draw reference image (hide when clip mode is enabled)
-      if (frame.referenceImage && !project.clipMode) {
-        const img = imageMap.get(frame.referenceImage);
-        if (img) {
-          ctx.save();
-          ctx.globalAlpha = (frame.referenceOpacity || 100) / 100;
-          ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
-          ctx.restore();
-        }
-      }
+      // Export does not include reference image (guide only for editing)
 
       // Load clip background image if clip mode is enabled
       const clipBackgroundImg =
