@@ -35,6 +35,7 @@ export interface ButtonControlProps extends SettingProps {
   icon?: React.ReactNode;
   alignment?: "default" | "super";
   disabled?: boolean;
+  showLabel?: boolean;
 }
 
 export interface ImageInputProps extends SettingProps {

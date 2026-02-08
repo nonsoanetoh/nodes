@@ -593,6 +593,24 @@
   fill: #595959;
 }
 
+/* Button with icon + text label */
+:global(.setting__button-control--with-label) button {
+  width: auto;
+  min-height: 2rem;
+  padding: 0 0.5rem;
+  gap: 0.375rem;
+}
+
+:global(.setting__button-control--with-label) button svg {
+  flex-shrink: 0;
+}
+
+.buttonLabel {
+  font-size: 0.8125rem;
+  color: #595959;
+  white-space: nowrap;
+}
+
 /* Super Alignment */
 :global(.setting__button-control--super) button {
   overflow: visible;

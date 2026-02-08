@@ -10,19 +10,26 @@ const ButtonControl: FC<ButtonControlProps> = ({
   shortcut,
   triggeredKey,
   disabled = false,
+  showLabel = false,
 }) => {
   const alignmentClass =
     alignment === "super" ? "setting__button-control--super" : "";
+  const withLabelClass = showLabel
+    ? "setting__button-control--with-label"
+    : "";
 
   return (
     <div className={styles.setting}>
-      <div className={`setting__button-control ${alignmentClass}`}>
+      <div
+        className={`setting__button-control ${alignmentClass} ${withLabelClass}`}
+      >
         <button
           title={label}
           onClick={() => onClick(label)}
           disabled={disabled}
         >
           {icon}
+          {showLabel && <span className={styles.buttonLabel}>{label}</span>}
         </button>
         {shortcut && (
           <div className="setting__shortcut-indicator">
